@@ -35,6 +35,36 @@ validator_app = typer.Typer(
 _NUM_QUESTIONS = 1
 
 
+def _read_commitment_bytes(subtensor, netuid: int, uid: int, hotkey: str) -> Optional[bytes]:
+    """Read a commitment across Bittensor SDK versions."""
+    commit_data = None
+    if hasattr(subtensor, "get_commitment_metadata"):
+        commit_data = subtensor.get_commitment_metadata(netuid, hotkey)
+
+    if isinstance(commit_data, dict) and "info" in commit_data:
+        fields = commit_data["info"].get("fields", [])
+        if fields and fields[0] and fields[0][0]:
+            raw_data = fields[0][0]
+            raw_key = next(
+                (k for k in raw_data if k.startswith("Raw") and k[3:].isdigit()),
+                None,
+            )
+            if raw_key is not None:
+                return bytes(raw_data[raw_key][0])
+
+    for method_name in ("get_commitment", "commitment"):
+        method = getattr(subtensor, method_name, None)
+        if method is None:
+            continue
+        commitment = method(netuid, uid)
+        if isinstance(commitment, bytes):
+            return commitment or None
+        if isinstance(commitment, str):
+            return commitment.encode("utf-8") if commitment else None
+
+    return None
+
+
 @validator_app.command("setup")
 def setup_check():
     """
@@ -256,29 +286,11 @@ def get_miners(
             progress.update(task, advance=1, description=f"Scanning UID {uid}/{len(metagraph.hotkeys) - 1}…")
 
             try:
-                commit_data = subtensor.get_commitment_metadata(netuid, hotkey)
-                if not commit_data:
+                compressed_bytes = _read_commitment_bytes(subtensor, netuid, uid, hotkey)
+                if not compressed_bytes:
                     uids_no_meta.append(uid)
                     continue
 
-
-                if not (isinstance(commit_data, dict) and 'info' in commit_data):
-                    uids_no_meta.append(uid)
-                    continue
-
-                fields = commit_data['info']['fields']
-                if not (fields and len(fields) > 0 and fields[0] and len(fields[0]) > 0):
-                    uids_no_meta.append(uid)
-                    continue
-
-                raw_data = fields[0][0]
-
-                raw_key = next((k for k in raw_data if k.startswith('Raw') and k[3:].isdigit()), None)
-                if raw_key is None:
-                    uids_no_meta.append(uid)
-                    continue
-
-                compressed_bytes = bytes(raw_data[raw_key][0])
                 metadata = decompress_metadata(compressed_bytes)
                 if not metadata:
                     uids_no_meta.append(uid)
@@ -540,30 +552,11 @@ def _scan_miners_from_chain(
         coldkey = metagraph.coldkeys[uid] if hasattr(metagraph, 'coldkeys') else ""
         try:
             with _lock_ctx:
-                commit_data = subtensor.get_commitment_metadata(netuid, hotkey)
-            if not commit_data:
+                compressed_bytes = _read_commitment_bytes(subtensor, netuid, uid, hotkey)
+            if not compressed_bytes:
                 uids_without_metadata.append(uid)
                 continue
 
-            if not (isinstance(commit_data, dict) and 'info' in commit_data):
-                uids_without_metadata.append(uid)
-                continue
-
-            fields = commit_data['info']['fields']
-            if not (fields and len(fields) > 0 and fields[0] and len(fields[0]) > 0):
-                uids_without_metadata.append(uid)
-                continue
-
-            raw_data = fields[0][0]
-
-            raw_key = next((k for k in raw_data if k.startswith('Raw') and k[3:].isdigit()), None)
-            if raw_key is None:
-                if verbose:
-                    console.print(f"  [yellow]UID {uid}: No RawN field in commitment data[/yellow]")
-                uids_without_metadata.append(uid)
-                continue
-
-            compressed_bytes = bytes(raw_data[raw_key][0])
             metadata = decompress_metadata(compressed_bytes)
             if not metadata:
                 if verbose:
