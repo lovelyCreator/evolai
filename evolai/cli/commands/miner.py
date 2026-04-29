@@ -521,7 +521,8 @@ def _register_single_track(
             data=compressed_metadata
         )
         
-        if response.success:
+        success = response if isinstance(response, bool) else getattr(response, "success", False)
+        if success:
             console.print("\n[bold green]✓ Model registered successfully![/bold green]")
             console.print(f"[dim]UID: {uid} | Model: {model_name}@{revision} | Track: {track}[/dim]")
             
@@ -532,7 +533,8 @@ def _register_single_track(
             console.print("\n[yellow]Note: Each miner can only register for ONE track.[/yellow]")
             console.print("[yellow]To change tracks, re-register with a different --track option.[/yellow]")
         else:
-            err_console.print(f"Failed to register model on-chain: {response.message}")
+            message = getattr(response, "message", str(response))
+            err_console.print(f"Failed to register model on-chain: {message}")
             raise typer.Exit(1)
             
     except Exception as e:
