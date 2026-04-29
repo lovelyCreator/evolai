@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evolai"
+version = "0.2.0"
+description = "EvolAI - LLM Model Evaluation Subnet on Bittensor"
+readme = "README.md"
+authors = [{name = "EvolAI Team"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["bittensor", "subnet", "llm", "evaluation", "blockchain"]
+requires-python = ">=3.9"
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "httpx>=0.27.0",
+    "bittensor-wallet>=4.0.0",
+    "bittensor>=9.4.0",
+    "transformers>=5.3.0",
+    "torch>=2.0.0",
+    "bitsandbytes>=0.43.0; platform_system == 'Linux'",
+    "accelerate>=0.20.0",
+    "huggingface_hub>=0.20.0",
+    "wandb>=0.16.0",
+    "python-dotenv>=1.0.0",
+    "datasets>=2.14.0",
+    "psutil>=5.9.0",
+    "openai>=1.0.0",
+    "aiohttp>=3.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/evolai-subnet/evolai"
+Documentation = "https://github.com/evolai-subnet/evolai/blob/main/README.md"
+Repository = "https://github.com/evolai-subnet/evolai.git"
+Issues = "https://github.com/evolai-subnet/evolai/issues"
+
+[project.scripts]
+evolcli = "evolai.cli.main:cli_main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "mypy>=0.990",
+    "ruff>=0.0.200",
+]
+# vllm CANNOT co-exist with bittensor in the same environment due to
+# conflicting fastapi/setuptools pins.  Install it in a separate virtualenv:
+#   bash scripts/setup-validator.sh          (automatic)
+#   pip install -r requirements-validator.txt (manual, in its own venv)
+# The validator calls vllm as a subprocess, no Python import needed.
+# validator = ["vllm>=0.6.0"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

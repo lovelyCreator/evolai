@@ -1,0 +1,22 @@
+# EvolAI Validator — vLLM (separate virtualenv)
+#
+# bittensor and vllm CANNOT share a pip environment:
+#   bittensor pins  fastapi<0.111  setuptools<71
+#   vllm requires   fastapi>=0.115 setuptools>=77
+#
+# The validator calls `vllm serve` as a subprocess — no Python import needed.
+# Install vllm in its own virtualenv and point the validator at the binary:
+#
+#   # Automatic (recommended):
+#   bash scripts/setup-validator.sh
+#
+#   # Manual:
+#   uv venv vllm_env
+#   uv pip install vllm --python vllm_env/bin/python
+#   echo 'VLLM_EXECUTABLE=vllm_env/bin/vllm' >> .env
+#
+# Then run the validator inside the MAIN env (which has bittensor + evolai):
+#   source .venv/bin/activate
+#   evolcli validator run --wallet <name>
+#
+vllm

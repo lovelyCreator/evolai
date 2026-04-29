@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+include requirements.txt
+include CONTRIBUTING.md
+include .env.example
+recursive-include evolai *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
