@@ -1,7 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(awk '{print $9, $5}')"
+      "Bash(awk '{print $9, $5}')",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(xargs grep -l \"set_weights\\\\|weights\\\\|emissions\")",
+      "Bash(xargs ls -la)",
+      "PowerShell($k = \\(Get-Command kaggle -ErrorAction SilentlyContinue\\); if \\($k\\) { \"kaggle CLI: $\\($k.Source\\)\" } else { \"kaggle CLI: NOT INSTALLED\" }; $j = \"$env:USERPROFILE\\\\.kaggle\\\\kaggle.json\"; if \\(Test-Path $j\\) { \"kaggle.json: present\" } else { \"kaggle.json: MISSING\" }; $e = \\(Get-Command evolcli -ErrorAction SilentlyContinue\\); if \\($e\\) { \"evolcli: $\\($e.Source\\)\" } else { \"evolcli: NOT INSTALLED\" })",
+      "Bash(git config *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(touch .git/__wtest)",
+      "Bash(rm -f .git/__wtest)",
+      "Read(//d/work/bittensor/evolai_47/evolai/**)",
+      "PowerShell(git add train_full.py)",
+      "PowerShell(\"--- retry add ---\")",
+      "PowerShell(if \\($?\\) { \"add ok\" } else { \"add failed\" })",
+      "Bash(git ls-remote *)",
+      "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main 2>&1)",
+      "Bash(git ls-tree *)",
+      "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main)"
     ]
   }
 }
