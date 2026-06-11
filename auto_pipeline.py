@@ -61,7 +61,7 @@ def get_miner_uid() -> int:
 
     subtensor = bt.Subtensor(NETWORK)
     metagraph = subtensor.metagraph(netuid=NETUID)
-    wallet    = bt.wallet(name=WALLET_NAME, hotkey=HOTKEY)
+    wallet    = bt.Wallet(name=WALLET_NAME, hotkey=HOTKEY)
     my_hotkey = wallet.hotkey.ss58_address
 
     for uid, hk in enumerate(metagraph.hotkeys):
