@@ -19,7 +19,12 @@
       "Bash(git ls-remote *)",
       "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main 2>&1)",
       "Bash(git ls-tree *)",
-      "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main)"
+      "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main)",
+      "Bash([ -f \"$f\" ])",
+      "Bash(echo \"EXISTS:\")",
+      "Bash(cat C:/Users/Po/.claude/projects/d--work-bittensor-evolai-47-evolai/memory/MEMORY.md)",
+      "Bash(echo \"MISSING\")",
+      "Bash(python check_miner.py --uid 55)"
     ]
   }
 }
