@@ -38,18 +38,32 @@ def main() -> None:
     if uid >= len(mg.hotkeys):
         raise SystemExit(f"UID {uid} not in subnet {args.netuid}")
 
-    I = [float(x) for x in mg.I]
-    T = [float(x) for x in mg.T]
-    E = [float(x) for x in mg.E]
+    def vec(*names):
+        """Return a metagraph vector by trying several attribute names."""
+        for n in names:
+            v = getattr(mg, n, None)
+            if v is not None:
+                try:
+                    return [float(x) for x in v]
+                except TypeError:
+                    continue
+        return [0.0] * len(mg.hotkeys)
+
+    I = vec("I", "incentive", "Incentive")
+    T = vec("T", "trust", "Trust")
+    E = vec("E", "emission", "Emission")
+    R = vec("R", "ranks", "rank", "Rank")
+    C = vec("C", "consensus", "Consensus")
+    S = vec("S", "stake", "total_stake", "Stake")
 
     print("=" * 64)
     print(f"EvolAI netuid {args.netuid} — UID {uid}   (block {block})")
     print("=" * 64)
     print(f"  hotkey      : {mg.hotkeys[uid]}")
-    print(f"  stake       : {float(mg.S[uid]):.4f}")
+    print(f"  stake       : {S[uid]:.4f}")
     print(f"  trust       : {T[uid]:.6f}")
-    print(f"  rank        : {float(mg.R[uid]):.6f}")
-    print(f"  consensus   : {float(mg.C[uid]):.6f}")
+    print(f"  rank        : {R[uid]:.6f}")
+    print(f"  consensus   : {C[uid]:.6f}")
     print(f"  incentive   : {I[uid]:.6f}")
     print(f"  emission    : {E[uid]:.6f}")
     try:
@@ -107,9 +121,11 @@ def main() -> None:
     nonzero_inc = sum(1 for x in I if x > 0)
     nonzero_trust = sum(1 for x in T if x > 0)
     # validators = UIDs with validator_permit / vtrust
+    permits = getattr(mg, "validator_permit", None)
+    if permits is None:
+        permits = getattr(mg, "validator_permits", None)
     try:
-        permits = [bool(x) for x in mg.validator_permit]
-        n_val = sum(permits)
+        n_val = sum(1 for x in permits if bool(x))
     except Exception:
         n_val = "?"
     print(f"  validators w/ permit : {n_val}")
