@@ -31,6 +31,10 @@ checkpointing at batch 1 / accum 16. Bump --batch if VRAM allows.
 """
 import argparse
 import os
+
+# Reduce CUDA fragmentation — must be set before torch initializes CUDA.
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -147,7 +151,7 @@ class AnswerOnlyCollator:
         }
 
 
-def train(samples, base_model, epochs, lr, batch, accum, max_len):
+def train(samples, base_model, epochs, lr, batch, accum, max_len, optim="adamw_torch_fused"):
     import torch
     from transformers import (
         AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments,
@@ -182,7 +186,7 @@ def train(samples, base_model, epochs, lr, batch, accum, max_len):
         report_to="none",
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
-        optim="adamw_torch_fused",
+        optim=optim,  # adamw_bnb_8bit cuts optimizer state ~12GB->~3GB on shared GPUs
         dataloader_num_workers=2,
         max_grad_norm=1.0,
     )
@@ -233,6 +237,9 @@ def main():
     p.add_argument("--batch", type=int, default=1)
     p.add_argument("--accum", type=int, default=16)
     p.add_argument("--max-len", type=int, default=2048)
+    p.add_argument("--optim", default="adamw_torch_fused",
+                   help="adamw_torch_fused (default) or adamw_bnb_8bit "
+                        "(needs bitsandbytes; saves ~9GB on a shared GPU)")
     p.add_argument("--skip-register", action="store_true")
     p.add_argument("--base-model", default=BASE_MODEL)
     a = p.parse_args()
@@ -256,7 +263,8 @@ def main():
     print()
 
     samples = build_samples(a.max_samples)
-    out = train(samples, a.base_model, a.epochs, a.lr, a.batch, a.accum, a.max_len)
+    out = train(samples, a.base_model, a.epochs, a.lr, a.batch, a.accum,
+                a.max_len, a.optim)
     rev = push_to_hub(out, MODEL_NAME)
 
     if a.skip_register:
