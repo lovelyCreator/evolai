@@ -24,7 +24,8 @@
       "Bash(echo \"EXISTS:\")",
       "Bash(cat C:/Users/Po/.claude/projects/d--work-bittensor-evolai-47-evolai/memory/MEMORY.md)",
       "Bash(echo \"MISSING\")",
-      "Bash(python check_miner.py --uid 55)"
+      "Bash(python check_miner.py --uid 55)",
+      "WebFetch(domain:evolai-gate.hf.space)"
     ]
   }
 }

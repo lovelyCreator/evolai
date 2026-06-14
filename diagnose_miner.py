@@ -143,21 +143,30 @@ def main() -> None:
           ", ".join(f"{i}={I[i]:.4f}" for i in top))
 
     # ── Verdict ────────────────────────────────────────────────────────────────
+    # NOTE: netuid 47 does NOT populate the on-chain `trust` column (it is 0 for
+    # every UID, including the top earner). Scores are computed off-chain by the
+    # owner gate (evolai-gate.hf.space) and pushed as weights. So `trust` is
+    # useless as an "evaluated?" signal here — read `incentive` directly.
     print("=" * 64)
-    if T[uid] <= 0:
-        print("VERDICT: scenario (A) — NOT BEING EVALUATED (trust=0).")
-        print("  -> Check the commitment + HF lines above. Most likely the")
-        print("     committed revision/model is wrong, the HF repo isn't public,")
-        print("     or no validator has reached you yet. Fix + re-register.")
-    elif I[uid] <= 0:
-        print("VERDICT: scenario (B) — evaluated (trust>0) but score too low to")
-        print("  earn emission. You're being graded; the model just isn't")
-        print("  competitive in its size band. -> train a stronger model")
-        print("  (more epochs / full fine-tune / better in-band base), re-push,")
-        print("  re-register. A light LoRA pass on Qwen2.5-1.5B rarely earns here.")
-    else:
+    burn_uid, burn = (top[0], I[top[0]]) if I else (None, 0.0)
+    commitment_ok = committed is not None
+    if I[uid] > 0:
         print(f"VERDICT: you ARE earning — incentive={I[uid]:.6f}, "
               f"emission={E[uid]:.6f}/block. Give it a tempo to compound.")
+    elif not commitment_ok:
+        print("VERDICT: NO on-chain commitment found — validators have nothing")
+        print("  to download. Re-run `evolcli miner register`.")
+    else:
+        print("VERDICT: committed correctly but NOT in the paying set "
+              f"(incentive=0, rank #{rank_inc}/{len(I)}).")
+        if burn_uid is not None and burn >= 0.5:
+            field = sum(x for x in I) - burn
+            print(f"  Context: UID {burn_uid} takes {burn:.1%} of emission "
+                  f"(owner/burn); the whole field shares ~{field:.1%}.")
+        print("  On this subnet trust=0 for everyone, so that's NOT 'unevaluated'.")
+        print("  The lever is a STRONGER model (full fine-tune / more epochs /")
+        print("  better in-band base / 3.5-3.8B band) — not a config change.")
+        print("  A light merged-LoRA on Qwen2.5-1.5B does not break into the set.")
     print("=" * 64)
 
 
