@@ -73,7 +73,9 @@ def build_samples(max_samples=None):
     print(f"  Loading dataset: {DATASET}")
     ds = load_dataset(DATASET, split="train")
     if max_samples:
-        ds = ds.select(range(min(max_samples, len(ds))))
+        # Shuffle first: the dataset spans multiple domains across shards, so
+        # the first N rows are NOT representative of the eval's mix.
+        ds = ds.shuffle(seed=42).select(range(min(max_samples, len(ds))))
     samples = [s for row in ds if (s := extract_sample(dict(row)))]
     print(f"  Usable (q,a) pairs: {len(samples)}")
     if not samples:
