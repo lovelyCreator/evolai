@@ -25,7 +25,13 @@
       "Bash(cat C:/Users/Po/.claude/projects/d--work-bittensor-evolai-47-evolai/memory/MEMORY.md)",
       "Bash(echo \"MISSING\")",
       "Bash(python check_miner.py --uid 55)",
-      "WebFetch(domain:evolai-gate.hf.space)"
+      "WebFetch(domain:evolai-gate.hf.space)",
+      "Bash(find /d/work -maxdepth 3 -type d \\\\\\( -iname '*polymarket*' -o -iname '*poly-market*' \\\\\\) 2>/dev/null | head -20)",
+      "Read(//d/work/**)",
+      "Bash(sed -n '/\"scripts\"/,/}/p' webapp/package.json)",
+      "Bash(command -v go)",
+      "Bash(go version *)",
+      "Bash(command -v node)"
     ]
   }
 }
